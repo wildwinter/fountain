@@ -1,5 +1,10 @@
 """
 fountain.py
+
+from https://github.com/wildwinter/fountain
+
+Released under MIT License.
+
 Ported to Python 3 by Colton J. Provias - cj@coltonprovias.com
 Original Python code at https://gist.github.com/ColtonProvias/8232624
 Based on Fountain by Nima Yousefi & John August
