@@ -27,8 +27,17 @@ fount = fountain.Fountain(STRING)
 
 This will make `fount` into a Fountain object.
 
-### Additions
-This version adds support for simple bold, italic, and underline markup.
+### Style Markup
+This version supports simple bold, italic, and underline markup.
+
+Symbols
+```
+*italic*
+**bold**
+***bolditalic***
+_underline_
+_underlined and **also bold**_
+```
 
 It adds the method `split_to_chunks()` to `FountainElement`.
 
