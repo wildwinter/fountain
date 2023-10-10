@@ -30,6 +30,9 @@ COMMON_TRANSITIONS = {'FADE OUT.', 'CUT TO BLACK.', 'FADE TO BLACK.'}
 UPPER_ALPHABETS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜ'
 
 
+def strip_slashes(text):
+    return text.replace("\\","")
+
 class FountainChunk:
     def __init__(self, bold=False, italic=False, underline=False):
         self.bold = bold
@@ -139,7 +142,7 @@ class FountainElement:
 
 class FountainScene:
     def __init__(self, scene_header_text=""):
-        self.header_text = scene_header_text
+        self.header_text = strip_slashes(scene_header_text)
         self.elements = list()
 
     def append(self, element):
@@ -342,6 +345,18 @@ class Fountain:
                         )
                     )
                     curr_scene = self._add_scene(self.elements[-1])
+                continue
+
+            if len(line) > 1 and line[0] == '!':
+                self.elements.append(
+                    FountainElement(
+                        Element.ACTION,
+                        full_strip[1:].strip(),
+                        original_line=linenum,
+                        original_content=line
+                    )
+                )
+                curr_scene.append(self.elements[-1])
                 continue
 
             if (
