@@ -3,13 +3,13 @@
 from setuptools import setup
 
 setup(
-    name="fountain",
-    version="0.0.1",
-    author="Manuel Senfft",
-    author_email="info@tagirijus.de",
-    description="a python fountain parser",
-    license="BSD",
+    name="Fountain",
+    version="0.0.2",
+    author="Ian Thomas",
+    author_email="ian@wildwinter.net",
+    description="A Python Fountain parser",
+    license="MIT",
     keywords="fountain scriptwriting script",
-    url="https://github.com/Tagirijus/fountain",
+    url="https://github.com/wildwinter/fountain",
     packages=['fountain']
 )
