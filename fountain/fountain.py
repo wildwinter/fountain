@@ -85,8 +85,9 @@ class FountainElement:
         self.original_content = original_content
 
     def is_empty(self):
-        return (self.element_type == Element.EMPTY or
-                self.element_type == Element.BONEYARD)
+        return (self.element_type == Element.EMPTY 
+                or self.element_type == Element.PAGE_BREAK
+                or self.element_type == Element.BONEYARD)
 
     # take the element_text and split it into
     # formatted chunks
