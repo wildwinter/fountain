@@ -5,6 +5,7 @@ Original Python code at https://gist.github.com/ColtonProvias/8232624
 Based on Fountain by Nima Yousefi & John August
 Original code for Objective-C at https://github.com/nyousefi/Fountain
 Further Edited by Manuel Senfft
+Further Edited by Ian Thomas
 """
 
 
@@ -12,6 +13,34 @@ COMMON_TRANSITIONS = {'FADE OUT.', 'CUT TO BLACK.', 'FADE TO BLACK.'}
 UPPER_ALPHABETS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜ'
 
 
+class FountainChunk:
+    def __init__(self, bold=False, italic=False, underline=False):
+        self.bold = bold
+        self.italic = italic
+        self.underline = underline
+        self.text = ""
+                  
+    def copy(self):
+        return FountainChunk(self.bold, self.italic, self.underline)
+    
+    def __repr__(self):
+        out = ""
+        if self.underline:
+            out += "<u>"
+        if self.bold:
+            out += "<b>"
+        if self.italic:
+            out += "<i>"
+        out += self.text
+        if self.italic:
+            out += "</i>"
+        if self.bold:
+            out += "</b>"
+        if self.underline:
+            out += "</u>"
+        return out
+
+                
 class FountainElement:
     def __init__(
         self,
@@ -34,6 +63,59 @@ class FountainElement:
         self.is_dual_dialogue = is_dual_dialogue
         self.original_line = original_line
         self.original_content = original_content
+
+    # take the element_text and split it into
+    # formatted chunks
+    def split_to_chunks(self):
+        
+        # This is very simple and will choke on
+        # invalid nesting
+        chunk = FountainChunk()
+        chunks  = [chunk]
+                                
+        is_escaped = False
+        stars = ""
+        
+        for c in self.element_text:
+            if is_escaped:
+                is_escaped = False
+                chunk.text+=c
+                continue
+                                                
+            if stars!="" and c!=stars[0]:            
+                new_chunk = chunk.copy()
+
+                if stars=="***":
+                    new_chunk.bold = not chunk.bold
+                    new_chunk.italic = not chunk.italic
+                elif stars=="**":
+                    new_chunk.bold = not chunk.bold
+                elif stars=="*":
+                    new_chunk.italic = not chunk.italic
+                                
+                chunks.append(new_chunk)
+
+                chunk = new_chunk
+                stars = ""
+                                                                
+            if c=='\\':
+                is_escaped = True
+                continue
+                                                                                            
+            if c=='_':
+                new_chunk = chunk.copy()
+                new_chunk.underline = not chunk.underline
+                chunks.append(new_chunk)
+                chunk = new_chunk
+                continue
+
+            if c=='*':
+                stars+=c
+                continue
+                            
+            chunk.text+=c
+
+        return chunks
 
     def __repr__(self):
         return self.element_type + ': ' + self.element_text
