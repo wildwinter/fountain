@@ -8,6 +8,23 @@ Further Edited by Manuel Senfft
 Further Edited by Ian Thomas
 """
 
+from enum import Enum
+
+# Element Types
+class Element(Enum):
+    EMPTY = 1
+    BONEYARD = 2
+    PAGE_BREAK = 3
+    SYNOPSIS = 4
+    COMMENT = 5
+    SECTION_HEADING = 6
+    SCENE_HEADING = 7
+    TRANSITION = 8
+    ACTION = 9
+    CHARACTER = 10
+    PARENTHETICAL = 11
+    DIALOGUE = 12
+
 
 COMMON_TRANSITIONS = {'FADE OUT.', 'CUT TO BLACK.', 'FADE TO BLACK.'}
 UPPER_ALPHABETS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜ'
@@ -120,11 +137,19 @@ class FountainElement:
     def __repr__(self):
         return self.element_type + ': ' + self.element_text
 
+class FountainScene:
+    def __init__(self, scene_header_text=""):
+        self.header_text = scene_header_text
+        self.elements = list()
+
+    def append(self, element):
+        self.elements.append(element)
 
 class Fountain:
     def __init__(self, string=None, path=None):
         self.metadata = dict()
         self.elements = list()
+        self.scenes = list()
 
         if path:
             with open(path) as fp:
@@ -162,12 +187,23 @@ class Fountain:
                 key, value = line.split(':', 1)
                 self.metadata[key.strip().lower()] = [value.strip()]
 
+    def _add_scene(self, scene_header_elem):
+        last_scene = self.scenes[-1]
+        if len(last_scene.elements)==0:
+            self.scenes.pop()
+        new_scene = FountainScene(scene_header_elem.element_text)
+        new_scene.elements.append(scene_header_elem)
+        self.scenes.append(new_scene)
+        return new_scene
+
     def _parse_body(self, script_body):
         is_comment_block = False
         is_inside_dialogue_block = False
         newlines_before = 0
         index = -1
         comment_text = list()
+        curr_scene = FountainScene()
+        self.scenes = [curr_scene]
 
         for linenum, line in enumerate(script_body):
             assert type(line) is str
@@ -176,7 +212,8 @@ class Fountain:
             full_strip = line.strip()
 
             if (not line or line.isspace()) and not is_comment_block:
-                self.elements.append(FountainElement('Empty Line'))
+                self.elements.append(FountainElement(Element.EMPTY))
+                curr_scene.append(self.elements[-1])
                 is_inside_dialogue_block = False
                 newlines_before += 1
                 continue
@@ -187,12 +224,13 @@ class Fountain:
                     text = line.replace('/*', '').replace('*/', '')
                     self.elements.append(
                         FountainElement(
-                            'Boneyard',
+                            Element.BONEYARD,
                             text,
                             original_line=linenum,
                             original_content=line
                         )
                     )
+                    curr_scene.append(self.elements[-1])
                     is_comment_block = False
                     newlines_before = 0
                 else:
@@ -205,12 +243,13 @@ class Fountain:
                 comment_text.append(text.strip())
                 self.elements.append(
                     FountainElement(
-                        'Boneyard',
+                        Element.BONEYARD,
                         '\n'.join(comment_text),
                         original_line=linenum,
                         original_content=line
                     )
                 )
+                curr_scene.append(self.elements[-1])
                 is_comment_block = False
                 comment_text = list()
                 newlines_before = 0
@@ -223,24 +262,26 @@ class Fountain:
             if line.startswith('==='):
                 self.elements.append(
                     FountainElement(
-                        'Page Break',
+                        Element.PAGE_BREAK,
                         line,
                         original_line=linenum,
                         original_content=line
                     )
                 )
+                curr_scene.append(self.elements[-1])
                 newlines_before = 0
                 continue
 
             if len(full_strip) > 0 and full_strip[0] == '=':
                 self.elements.append(
                     FountainElement(
-                        'Synopsis',
+                        Element.SYNOPSIS,
                         full_strip[1:].strip(),
                         original_line=linenum,
                         original_content=line
                     )
                 )
+                curr_scene.append(self.elements[-1])
                 continue
 
             if (
@@ -250,12 +291,13 @@ class Fountain:
             ):
                 self.elements.append(
                     FountainElement(
-                        'Comment',
+                        Element.COMMENT,
                         full_strip.strip('[] \t'),
                         original_line=linenum,
                         original_content=line
                     )
                 )
+                curr_scene.append(self.elements[-1])
                 continue
 
             if len(full_strip) > 0 and full_strip[0] == '#':
@@ -263,13 +305,14 @@ class Fountain:
                 depth = full_strip.split()[0].count('#')
                 self.elements.append(
                     FountainElement(
-                        'Section Heading',
+                        Element.SECTION_HEADING,
                         full_strip[depth:].strip(),
                         section_depth=depth,
                         original_line=linenum,
                         original_content=line
                     )
                 )
+                curr_scene.append(self.elements[-1])
                 continue
 
             if len(line) > 1 and line[0] == '.' and line[1] != '.':
@@ -279,7 +322,7 @@ class Fountain:
                         full_strip[::-1].find('#', 1) - 1
                     self.elements.append(
                         FountainElement(
-                            'Scene Heading',
+                            Element.SCENE_HEADING,
                             full_strip[1:scene_number_start].strip(),
                             scene_number=full_strip[
                                 scene_number_start:
@@ -288,15 +331,17 @@ class Fountain:
                             original_content=line
                         )
                     )
+                    curr_scene = self._add_scene(self.elements[-1])
                 else:
                     self.elements.append(
                         FountainElement(
-                            'Scene Heading',
+                            Element.SCENE_HEADING,
                             full_strip[1:].strip(),
                             original_line=linenum,
                             original_content=line
                         )
                     )
+                    curr_scene = self._add_scene(self.elements[-1])
                 continue
 
             if (
@@ -312,8 +357,8 @@ class Fountain:
                         full_strip[::-1].find('#', 1) - 1
                     self.elements.append(
                         FountainElement(
-                            'Scene Heading',
-                            full_strip[
+                            Element.SCENE_HEADING,
+                            line.split()[0]+" "+full_strip[
                                 scene_name_start:scene_number_start
                             ].strip(),
                             scene_number=full_strip[
@@ -324,40 +369,44 @@ class Fountain:
                             original_content=line
                         )
                     )
+                    curr_scene = self._add_scene(self.elements[-1])
                 else:
                     self.elements.append(
                         FountainElement(
-                            'Scene Heading',
-                            full_strip[scene_name_start:].strip(),
+                            Element.SCENE_HEADING,
+                            line.split()[0]+" "+full_strip[scene_name_start:].strip(),
                             original_line=linenum,
                             scene_abbreviation=line.split()[0],
                             original_content=line
                         )
                     )
+                    curr_scene = self._add_scene(self.elements[-1])
                 continue
 
             if full_strip.endswith(' TO:'):
                 newlines_before = 0
                 self.elements.append(
                     FountainElement(
-                        'Transition',
+                        Element.TRANSITION,
                         full_strip,
                         original_line=linenum,
                         original_content=line
                     )
                 )
+                curr_scene.append(self.elements[-1])
                 continue
 
             if full_strip in COMMON_TRANSITIONS:
                 newlines_before = 0
                 self.elements.append(
                     FountainElement(
-                        'Transition',
+                        Element.TRANSITION,
                         full_strip,
                         original_line=linenum,
                         original_content=line
                     )
                 )
+                curr_scene.append(self.elements[-1])
                 continue
 
             if full_strip[0] == '>':
@@ -365,22 +414,24 @@ class Fountain:
                 if len(full_strip) > 1 and full_strip[-1] == '<':
                     self.elements.append(
                         FountainElement(
-                            'Action',
+                            Element.ACTION,
                             full_strip[1:-1].strip(),
                             is_centered=True,
                             original_line=linenum,
                             original_content=line
                         )
                     )
+                    curr_scene.append(self.elements[-1])
                 else:
                     self.elements.append(
                         FountainElement(
-                            'Transition',
+                            Element.TRANSITION,
                             full_strip[1:].strip(),
                             original_line=linenum,
                             original_content=line
                         )
                     )
+                    curr_scene.append(self.elements[-1])
                 continue
 
             if (
@@ -394,28 +445,30 @@ class Fountain:
                 newlines_before = 0
                 if full_strip[-1] == '^':
                     for element in reversed(self.elements):
-                        if element.element_type == 'Character':
+                        if element.element_type == Element.CHARACTER:
                             element.is_dual_dialogue = True
                             break
                     self.elements.append(
                         FountainElement(
-                            'Character',
+                            Element.CHARACTER,
                             full_strip.lstrip('@').rstrip('^').strip(),
                             is_dual_dialogue=True,
                             original_line=linenum,
                             original_content=line
                         )
                     )
+                    curr_scene.append(self.elements[-1])
                     is_inside_dialogue_block = True
                 else:
                     self.elements.append(
                         FountainElement(
-                            'Character',
+                            Element.CHARACTER,
                             full_strip.lstrip('@'),
                             original_line=linenum,
                             original_content=line
                         )
                     )
+                    curr_scene.append(self.elements[-1])
                     is_inside_dialogue_block = True
                 continue
 
@@ -423,14 +476,15 @@ class Fountain:
                 if newlines_before == 0 and full_strip[0] == '(':
                     self.elements.append(
                         FountainElement(
-                            'Parenthetical',
+                            Element.PARENTHETICAL,
                             full_strip,
                             original_line=linenum,
                             original_content=line
                         )
                     )
+                    curr_scene.append(self.elements[-1])
                 else:
-                    if self.elements[-1].element_type == 'Dialogue':
+                    if self.elements[-1].element_type == Element.DIALOGUE:
                         self.elements[-1].element_text = '\n'.join(
                             [self.elements[-1].element_text, full_strip]
                         )
@@ -440,12 +494,13 @@ class Fountain:
                     else:
                         self.elements.append(
                             FountainElement(
-                                'Dialogue',
+                                Element.DIALOGUE,
                                 full_strip,
                                 original_line=linenum,
                                 original_content=line
                             )
                         )
+                        curr_scene.append(self.elements[-1])
                 continue
 
             if newlines_before == 0 and len(self.elements) > 0:
@@ -455,10 +510,11 @@ class Fountain:
             else:
                 self.elements.append(
                     FountainElement(
-                        'Action',
+                        Element.ACTION,
                         full_strip,
                         original_line=linenum,
                         original_content=line
                     )
                 )
+                curr_scene.append(self.elements[-1])
                 newlines_before = 0

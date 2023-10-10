@@ -25,7 +25,42 @@ from fountain import fountain
 fount = fountain.Fountain(STRING)
 ```
 
-This will make `fount` into a Fountain object.
+This will make `fount` into a Fountain object with fields called `metadata` and `elements`.
+
+Each object in `elements` is a `FountainElement` which has an `element_type` drawn from the
+enum `Element` - for example:
+```
+Element.CHARACTER = character header
+Element.PARATHENTICAL = v/o direciton instruction
+Element.DIALOGUE = line of dialogue
+```
+
+See the [fountain reference](https://fountain.io/syntax) for more info.
+
+You iterate through elements like so:
+```
+from fountain import fountain
+
+fount = fountain.Fountain(STRING)
+
+for element in fount.elements:
+    print(element.element_text)
+
+```
+
+### Scenes
+This version adds a list of scenes, like so:
+```
+from fountain import fountain
+
+fount = fountain.Fountain(STRING)
+
+for scene in fount.scenes:
+    for element in scene.elements:
+        print(element.element_text)
+
+```
+The first element of `scene.elements` is always the scene header itself.
 
 ### Style Markup
 This version supports simple bold, italic, and underline markup.
@@ -53,8 +88,8 @@ fount = fountain.Fountain(STRING)
 for element in fount.elements:
     
     # For these two types we want to care about markup...
-    if (element.element_type == 'Character' 
-        or element.element_type == 'Action'):
+    if (element.element_type == fountain.Element.DIALOGUE
+        or element.element_type == fountain.Element.ACTION):
 
         chunks = element.split_to_chunks()
         for chunk in chunks:
