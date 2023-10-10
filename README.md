@@ -1,10 +1,14 @@
-# Fountain parser
+# Fountain Parser
 
 ## About
 
-This python script is a fountain script parser, which converts .fountain files to python object. It is ported to Python 3 by Colton J. Provias - cj@coltonprovias.com - [original code here](https://gist.github.com/ColtonProvias/8232624), based on `Fountain` by Nima Yousefi & John August; original code for Objective-C at https://github.com/nyousefi/Fountain.
+NOTE: Just forked from [fountain](https://github.com/Tagirijus/fountain) to add support for Fountain's built-in markup styling.
 
-I did just some little tweaks to Coltons code, since I ran into some issues.
+This Python script is a Fountain script parser, which converts .fountain files to Python objects.
+
+* Modified by [Tagirijus](https://github.com/Tagirijus/)
+* Ported to Python 3 by Colton J. Provias - cj@coltonprovias.com - [original code here](https://gist.github.com/ColtonProvias/8232624)
+* based on `Fountain` by Nima Yousefi & John August; original code for Objective-C at [https://github.com/nyousefi/Fountain].
 
 ## Install
 
@@ -20,4 +24,4 @@ from fountain import fountain
 F = fountain.Fountain(STRING)
 ```
 
-This will make `F` to a fountain object.
+This will make `F` into a Fountain object.
