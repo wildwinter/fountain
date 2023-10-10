@@ -84,6 +84,10 @@ class FountainElement:
         self.original_line = original_line
         self.original_content = original_content
 
+    def is_empty(self):
+        return (self.element_type == Element.EMPTY or
+                self.element_type == Element.BONEYARD)
+
     # take the element_text and split it into
     # formatted chunks
     def split_to_chunks(self):
@@ -148,6 +152,13 @@ class FountainScene:
     def append(self, element):
         self.elements.append(element)
 
+    def is_empty(self):
+        for element in self.elements:
+            if not element.is_empty():
+                return False
+        return True
+    
+
 class Fountain:
     def __init__(self, string=None, path=None):
         self.metadata = dict()
@@ -192,7 +203,7 @@ class Fountain:
 
     def _add_scene(self, scene_header_elem):
         last_scene = self.scenes[-1]
-        if len(last_scene.elements)==0:
+        if last_scene.is_empty():
             self.scenes.pop()
         new_scene = FountainScene(scene_header_elem.element_text)
         new_scene.elements.append(scene_header_elem)
