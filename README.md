@@ -31,7 +31,7 @@ Each object in `elements` is a `FountainElement` which has an `element_type` dra
 enum `Element` - for example:
 ```
 Element.CHARACTER = character header
-Element.PARATHENTICAL = v/o direciton instruction
+Element.PARENTHETICAL = v/o direction instruction
 Element.DIALOGUE = line of dialogue
 ```
 
