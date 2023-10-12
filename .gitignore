@@ -5,3 +5,4 @@ build/
 dist/
 temp/
 test.py
+.DS_Store
