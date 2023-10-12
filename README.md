@@ -76,7 +76,7 @@ _underlined and **also bold**_
 
 It adds the method `split_to_chunks()` to `FountainElement`.
 
-Optionally you can call it on an element to scan the text and break it into `FountainChunk` objects which will be stored on `FountainElement.chunks`.
+Optionally you can call it on an element to scan the text and break it into `FountainChunk` objects.
 
 These chunks each consist of a text element, and whether italic, bool, or underline is true for that element.
 
