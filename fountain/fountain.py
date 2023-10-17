@@ -32,7 +32,7 @@ class Element(Enum):
 
 
 COMMON_TRANSITIONS = {'FADE OUT.', 'CUT TO BLACK.', 'FADE TO BLACK.'}
-UPPER_ALPHABETS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ÄÖÜ0123456789'
+CHARACTER_ALLOWABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ _ÄÖÜ0123456789'
 
 
 def strip_slashes(text):
@@ -471,7 +471,7 @@ class Fountain:
                 and index + 1 < len(script_body)
                 and script_body[index + 1]
                 and not line[0] in ['[', ']', ',', '(', ')']
-                and (all([(c in UPPER_ALPHABETS) for c in full_strip])
+                and (all([(c in CHARACTER_ALLOWABLE) for c in full_strip])
                      or full_strip[0] == '@')
             ):
                 newlines_before = 0
