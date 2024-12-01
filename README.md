@@ -1,5 +1,12 @@
 # Fountain Parser
 
+## Now Obsolete - Unmaintained!
+
+**This project is now unmaintained.**
+
+I have released **fountain-tools**, a new set of parsers written from scratch in Python, Javascript, C# and C++. You can find them here:
+[fountain-tools]([http](https://github.com/wildwinter/fountain-tools).
+
 ## About
 
 NOTE: Forked from [fountain](https://github.com/Tagirijus/fountain) to add support for Fountain's built-in markup styling.
