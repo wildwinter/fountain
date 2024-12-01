@@ -5,7 +5,7 @@
 **This project is now unmaintained.**
 
 I have released **fountain-tools**, a new set of parsers written from scratch in Python, Javascript, C# and C++. You can find them here:
-[fountain-tools]([http](https://github.com/wildwinter/fountain-tools).
+[fountain-tools](https://github.com/wildwinter/fountain-tools).
 
 ## About
 
